@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C++ AI Course Builder Demo</title>
+  <style>
+    :root {
+      --bg-dark: #0b1020;
+      --card-light: #f8fafc;
+      --text-light: #e5e7eb;
+      --text-dark: #111;
+      --accent: #4758ff;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-light);
+    }
+    header {
+      background: linear-gradient(90deg, #141a33, #232f54);
+      padding: 16px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .container {
+      max-width: 960px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+    select, button {
+      font-size: 1rem;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: var(--text-light);
+      margin-right: 8px;
+    }
+    button {
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+    }
+    .card {
+      background: var(--card-light);
+      color: var(--text-dark);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin: 18px 0;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    h2, h3 { margin-top: 0; }
+    iframe {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: 0;
+      border-radius: 12px;
+      margin: 8px 0 16px;
+    }
+    .pill {
+      display: inline-block;
+      background: #e2e8f0;
+      color: #0f172a;
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin: 3px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .quiz input[type="radio"], .quiz input[type="text"] {
+      margin-top: 6px;
+    }
+    .quiz button {
+      margin-top: 10px;
+    }
+    .result {
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    footer {
+      text-align: center;
+      margin: 28px 0 16px;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <header>C++ AI Course Builder Demo</header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Select a Topic</h2>
+      <select id="topicSelect">
+        <option value="pointers">Pointers in C++</option>
+        <option value="oop">Object-Oriented Programming (Classes & Objects)</option>
+        <option value="file">File Handling in C++</option>
+        <option value="exception">Exception Handling in C++</option>
+      </select>
+      <button onclick="loadTopic()">Load Topic</button>
+    </div>
+
+    <div id="courseRoot"></div>
+  </div>
+
+  <footer>Project by Anand Singh, Lovely Professional University</footer>
+
+  <!-- JavaScript starts below -->
+  <script>
+/* ------------ course data ------------ */
+const topics = {
+  pointers: {
+    title: "Pointers in C++",
+    lessons: [
+      {
+        title: "Lesson 1 – Introduction to Pointers",
+        objectives: [
+          "Understand memory addresses and pointer basics",
+          "Use & and * operators correctly"
+        ],
+        video: "qYEjR6M0wSk",
+        body: `A pointer holds the <em>address</em> of another variable. 
+Use <code>&x</code> to get an address and <code>*p</code> to access what the pointer points to.`,
+        quiz: [
+          { q: "What does &x return?", opts: ["Value of x", "Address of x", "Type of x"], ans: 1 },
+          { q: "Which operator is used to access the value pointed by a pointer?", opts: ["&", "*", "#"], ans: 1 }
+        ]
+      },
+      {
+        title: "Lesson 2 – Pointer Arithmetic and Arrays",
+        objectives: [
+          "Traverse arrays with pointers",
+          "Avoid out-of-bounds errors"
+        ],
+        video: "EvYmTCx9BFs",
+        body: `Array names act as pointers to the first element. 
+Pointer arithmetic moves in units of the element’s size.`,
+        quiz: [
+          { q: "If int a[3]={10,20,30}; int* p=a; *(p+1)==?", opts:["10","20","30"], ans:1 },
+          { q: "Pointer arithmetic increments by:", opts:["1 byte","sizeof(type)","compiler-dependent"], ans:1 }
+        ]
+      },
+      {
+        title: "Lesson 3 – Dynamic Memory",
+        objectives:[
+          "Use new/delete properly",
+          "Recognize memory leaks"
+        ],
+        video: "YHwEIfrXZgE",
+        body:`Dynamic allocation lets you request memory at runtime with <code>new</code>. 
+Always free it with <code>delete</code> or use smart pointers.`,
+        quiz:[
+          { q:"Which frees memory allocated by new[]?", opts:["delete p","delete[] p","free(p)"], ans:1 },
+          { q:"Preferred alternative to raw pointers?", opts:["unique_ptr","malloc","int*"], ans:0 }
+        ]
+      }
+    ]
+  },
+  oop: {
+    title: "Object-Oriented Programming",
+    lessons: [
+      {
+        title: "Lesson 1 – Classes and Objects",
+        objectives:["Define a class","Instantiate an object"],
+        video: "mlIUKyZIUUU",
+        body:`Classes group data and functions. 
+Objects are instances created from a class.`,
+        quiz:[
+          { q:"Keyword used to define a class:", opts:["struct","object","class"], ans:2 },
+          { q:"An object is:", opts:["Function","Instance of a class","Library"], ans:1 }
+        ]
+      },
+      {
+        title: "Lesson 2 – Constructors & Destructors",
+        objectives:["Understand special member functions","Use constructors for initialization"],
+        video:"i_5pvt7ag7E",
+        body:`Constructors run automatically when an object is created; destructors run when it goes out of scope.`,
+        quiz:[
+          { q:"Constructor name:", opts:["Same as class","Different name","Random"], ans:0 },
+          { q:"Destructor symbol:", opts:["@","~","!"], ans:1 }
+        ]
+      },
+      {
+        title:"Lesson 3 – Encapsulation & Abstraction",
+        objectives:["Use access specifiers","Hide internal details"],
+        video:"-W-TYjL0aFE",
+        body:`Encapsulation hides data with private/protected members; abstraction exposes only necessary features.`,
+        quiz:[
+          { q:"Access specifier that hides data:", opts:["public","private","global"], ans:1 },
+          { q:"Abstraction focuses on:", opts:["Implementation","Essential features","Syntax"], ans:1 }
+        ]
+      }
+    ]
+  },
+  file: {
+    title: "File Handling in C++",
+    lessons:[
+      {
+        title:"Lesson 1 – Streams and Files",
+        objectives:["Use ifstream/ofstream","Open and close files"],
+        video:"NBsmPHXjLfg",
+        body:`File streams provide input and output using the same syntax as cin/cout.`,
+        quiz:[
+          { q:"Header for file handling:", opts:["<fstream>","<file>","<input>"], ans:0 },
+          { q:"Object for writing to files:", opts:["ifstream","ofstream","cin"], ans:1 }
+        ]
+      },
+      {
+        title:"Lesson 2 – Reading and Writing",
+        objectives:["Use >> and << with files","Detect EOF"],
+        video:"8pJCZW-raug",
+        body:`Use the insertion (<<) and extraction (>>) operators with file stream objects.`,
+        quiz:[
+          { q:"Function to check end of file:", opts:["eof()","end()","stop()"], ans:0 },
+          { q:"To append data use mode:", opts:["ios::app","ios::add","ios::extra"], ans:0 }
+        ]
+      },
+      {
+        title:"Lesson 3 – Binary Files",
+        objectives:["Read/write structures","Use read()/write()"],
+        video:"TF2-F2duY6c",
+        body:`Binary I/O allows direct reading of memory blocks for efficiency.`,
+        quiz:[
+          { q:"Which functions handle binary I/O?", opts:["get()/put()","read()/write()","getline()"], ans:1 },
+          { q:"Binary mode flag:", opts:["ios::binary","ios::bin","ios::fast"], ans:0 }
+        ]
+      }
+    ]
+  },
+  exception:{
+    title:"Exception Handling in C++",
+    lessons:[
+      {
+        title:"Lesson 1 – Try, Throw, Catch",
+        objectives:["Understand basic syntax","Handle runtime errors"],
+        video:"essQiHKRmrc",
+        body:`Use <code>try</code> blocks for code that might fail, <code>throw</code> to raise, and <code>catch</code> to handle.`,
+        quiz:[
+          { q:"Keyword used to generate an exception:", opts:["raise","throw","catch"], ans:1 },
+          { q:"Block that handles exceptions:", opts:["try","catch","error"], ans:1 }
+        ]
+      },
+      {
+        title:"Lesson 2 – Multiple Catches",
+        objectives:["Handle different types","Understand catch-all"],
+        video:"FynvrvLw3Rs",
+        body:`Multiple catch blocks can handle specific exception types; use <code>catch(...)</code> for all.`,
+        quiz:[
+          { q:"catch(...) is called:", opts:["specific","generic","thrower"], ans:1 },
+          { q:"You can have:", opts:["one catch","many catches","none"], ans:1 }
+        ]
+      },
+      {
+        title:"Lesson 3 – Custom Exceptions",
+        objectives:["Derive from std::exception","Override what()"],
+        video:"5nCXSDv6e4I",
+        body:`Custom exceptions provide descriptive error messages for debugging.`,
+        quiz:[
+          { q:"Base class for custom exceptions:", opts:["exception","error","problem"], ans:0 },
+          { q:"Function that returns message:", opts:["get()","what()","info()"], ans:1 }
+        ]
+      }
+    ]
+  }
+};
+
+/* ------------ UI logic ------------ */
+function loadTopic(){
+  const key=document.getElementById("topicSelect").value;
+  const topic=topics[key];
+  const root=document.getElementById("courseRoot");
+  root.innerHTML="";
+  const title=document.createElement("h2");
+  title.textContent=topic.title;
+  root.appendChild(title);
+
+  topic.lessons.forEach((l,idx)=>{
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML = `<h3>${l.title}</h3>
+${l.objectives.map(o => `<span class="pill">${o}</span>`).join("")}
+<p>${l.body}</p>`;
+
+// --- THUMBNAIL + LINK ONLY (no iframe) ---
+const thumbBox = document.createElement("div");
+thumbBox.style.textAlign = "center";
+thumbBox.style.margin = "10px 0 20px";
+
+const thumb = document.createElement("img");
+thumb.src = `https://img.youtube.com/vi/${l.video}/hqdefault.jpg`;
+thumb.alt = "Video thumbnail";
+thumb.style.width = "100%";
+thumb.style.maxWidth = "640px";
+thumb.style.borderRadius = "12px";
+thumb.style.border = "1px solid #1f2937";
+thumbBox.appendChild(thumb);
+
+const link = document.createElement("a");
+link.href = `https://www.youtube.com/watch?v=${l.video}`;
+link.target = "_blank";
+link.textContent = "▶ Watch on YouTube";
+link.style.display = "inline-block";
+link.style.marginTop = "8px";
+link.style.padding = "10px 16px";
+link.style.background = "#4758ff";
+link.style.color = "#fff";
+link.style.borderRadius = "8px";
+link.style.fontWeight = "600";
+link.style.textDecoration = "none";
+thumbBox.appendChild(document.createElement("br"));
+thumbBox.appendChild(link);
+
+card.appendChild(thumbBox);
+// --- END THUMBNAIL + LINK ---
+
+    const quizDiv=document.createElement("div");
+    quizDiv.className="quiz";
+    quizDiv.innerHTML="<h4>Quick Quiz</h4>";
+    l.quiz.forEach((q,i)=>{
+      const qWrap=document.createElement("div");
+      qWrap.innerHTML=`<p>${i+1}. ${q.q}</p>`;
+      q.opts.forEach((opt,j)=>{
+// one group name per question
+const group = `${key}_${idx}_${i}`;   // topic_lesson_question
+const id = `${group}_${j}`;
+
+const label = document.createElement("label");
+label.innerHTML = `<input type="radio" name="${group}" value="${j}" id="${id}"> ${opt}`;
+qWrap.appendChild(label);
+
+        qWrap.appendChild(document.createElement("br"));
+      });
+      quizDiv.appendChild(qWrap);
+    });
+    const btn=document.createElement("button");
+    btn.textContent="Submit Quiz";
+    const res=document.createElement("div");
+    res.className="result";
+    btn.onclick=()=>{
+      let correct=0, total=l.quiz.length;
+      l.quiz.forEach((q,i)=>{
+        const name=`${key}_${idx}_${i}_${0}_grp`.split("_0_")[0]+"_grp";
+const group = `${key}_${idx}_${i}`;
+const checked = document.querySelector(`input[name="${group}"]:checked`);
+if (checked && Number(checked.value) === Number(l.quiz[i].ans)) {
+  correct++;
+}
+
+      });
+      const pct=Math.round(correct/total*100);
+      res.textContent=`Score: ${pct}% (${correct}/${total})`;
+    };
+    quizDiv.appendChild(btn);
+    quizDiv.appendChild(res);
+    card.appendChild(quizDiv);
+    root.appendChild(card);
+  });
+}
+
+/* Load default topic on start */
+loadTopic();
+</script>
+</body>
+</html>
+
